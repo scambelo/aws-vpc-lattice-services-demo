@@ -72,7 +72,7 @@ resource "aws_vpclattice_service_network_vpc_association" "vpc_a" {
 
 # --- Target Group: Instance B by IP ---
 resource "aws_vpclattice_target_group" "service_b" {
-  name = "tg-service-b"
+  name = "service-b-targets"
   type = "IP"
 
   config {
