@@ -53,14 +53,25 @@ resource "aws_security_group" "vpc_association" {
   vpc_id      = aws_vpc.vpc_a.id
 
   egress {
-    description = "Allow HTTP to VPC Lattice data plane"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = { Name = "vpc-lattice-association" }
+}
+
+# Ingress rule: allow HTTP from VPC A instances to reach VPC Lattice data plane.
+# Managed as a separate resource to avoid SG recreation on description changes.
+resource "aws_vpc_security_group_ingress_rule" "vpc_association_http" {
+  security_group_id = aws_security_group.vpc_association.id
+  description       = "Allow HTTP from VPC A to VPC Lattice"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+  cidr_ipv4         = local.cidr_a
 }
 
 resource "aws_vpclattice_service_network_vpc_association" "vpc_a" {
