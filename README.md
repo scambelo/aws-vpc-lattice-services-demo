@@ -90,7 +90,7 @@ curl --aws-sigv4 "aws:amz:<aws_region>:vpc-lattice-svcs" \
 ```
 
 > [!NOTE]
-> Use `terraform output note` to get these commands with the correct values already filled in — instance ID, role name, domain, and region.
+> Use `terraform output note` to get these commands with the correct values already filled in — `instance ID`, `role name`, `domain`, and `region`.
 
 ## Variables
 
