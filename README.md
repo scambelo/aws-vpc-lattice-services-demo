@@ -31,41 +31,56 @@ terraform init
 terraform apply
 ```
 
+To deploy in a different region:
+
+```shell
+terraform apply -var="aws_region=us-east-1"
+```
+
 Deployment takes 3-5 minutes. SSM VPC Endpoints are the slowest resource to provision.
 
-Once complete, run `terraform output note` to get the exact verification commands for your deployment.
+Once complete, run the following to get the exact verification commands for your deployment — with the correct resource IDs and region already substituted:
+
+```shell
+terraform output note
+```
 
 ## Verification
+
+The output of `terraform output note` contains all commands ready to run. The steps below show what to expect at each stage.
 
 ### 1. Connect to Instance A via SSM
 
 ```shell
-aws ssm start-session --target <instance_a_id> --region eu-west-1
+aws ssm start-session --target <instance_a_id> --region <aws_region>
 ```
 
 ### 2. Unsigned request — expect 403
 
 ```shell
 curl http://<service_b_domain>
+
 # AccessDeniedException: User: anonymous is not authorized to perform: vpc-lattice-svcs:Invoke
 ```
 
+An unsigned request has no identity — it is treated as `anonymous` and rejected by the service network auth policy.
+
 ### 3. Signed request — expect 200
 
-Retrieve credentials from the EC2 instance metadata and sign the request with curl:
+Retrieve credentials from the EC2 instance metadata and sign the request using curl's built-in `--aws-sigv4` flag. The signing region must match the region where you deployed:
 
 ```shell
 TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
   -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
 CREDS=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
-  http://169.254.169.254/latest/meta-data/iam/security-credentials/vpc-lattice-demo-instance-a)
+  http://169.254.169.254/latest/meta-data/iam/security-credentials/<instance_a_role_name>)
 
 export AWS_ACCESS_KEY_ID=$(echo $CREDS | python3 -c "import sys,json; print(json.load(sys.stdin)['AccessKeyId'])")
 export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | python3 -c "import sys,json; print(json.load(sys.stdin)['SecretAccessKey'])")
 export AWS_SESSION_TOKEN=$(echo $CREDS | python3 -c "import sys,json; print(json.load(sys.stdin)['Token'])")
 
-curl --aws-sigv4 "aws:amz:eu-west-1:vpc-lattice-svcs" \
+curl --aws-sigv4 "aws:amz:<aws_region>:vpc-lattice-svcs" \
      --user "$AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY" \
      -H "x-amz-security-token: $AWS_SESSION_TOKEN" \
      -H "x-amz-content-sha256: UNSIGNED-PAYLOAD" \
@@ -73,6 +88,9 @@ curl --aws-sigv4 "aws:amz:eu-west-1:vpc-lattice-svcs" \
 
 # Hello from Service B (10.0.0.x)
 ```
+
+> [!NOTE]
+> Use `terraform output note` to get these commands with the correct values already filled in — instance ID, role name, domain, and region.
 
 ## Variables
 
