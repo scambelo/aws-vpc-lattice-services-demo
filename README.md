@@ -79,7 +79,6 @@ curl --aws-sigv4 "aws:amz:eu-west-1:vpc-lattice-svcs" \
 | Variable | Description | Default |
 |---|---|---|
 | `aws_region` | AWS region to deploy | `eu-west-1` |
-| `aws_profile` | AWS CLI profile | `sandbox` |
 
 ## Cleanup
 
