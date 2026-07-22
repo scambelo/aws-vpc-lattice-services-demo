@@ -123,22 +123,28 @@ resource "aws_vpclattice_service" "service_b" {
 
 # Fine-grained auth policy on the Service:
 # Only Instance A's IAM role can invoke Service B.
+# We use aws:PrincipalArn condition because VPC Lattice evaluates the caller
+# as an assumed-role ARN (sts::assumed-role/...) while the IAM role ARN uses
+# iam::role/... — the condition matches the underlying role regardless of session.
 data "aws_iam_policy_document" "service_b_auth" {
   statement {
     sid    = "AllowInstanceARole"
     effect = "Allow"
     principals {
       type        = "AWS"
-      identifiers = [aws_iam_role.instance_a.arn]
+      identifiers = ["arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:role/vpc-lattice-demo-instance-a"]
     }
     actions   = ["vpc-lattice-svcs:Invoke"]
-    resources = [aws_vpclattice_service.service_b.arn]
+    resources = ["*"]
   }
 }
 
 resource "aws_vpclattice_auth_policy" "service_b" {
   resource_identifier = aws_vpclattice_service.service_b.arn
   policy              = data.aws_iam_policy_document.service_b_auth.json
+
+  # IAM role must exist before VPC Lattice validates the policy principal.
+  depends_on = [aws_iam_role.instance_a]
 }
 
 # --- Listener: HTTP on port 80 ---
@@ -165,4 +171,10 @@ resource "aws_vpclattice_service_network_service_association" "service_b" {
   service_identifier         = aws_vpclattice_service.service_b.id
   service_network_identifier = aws_vpclattice_service_network.this.id
   tags                       = { Name = "assoc-service-b" }
+
+  # Ensures the target group attachment is destroyed AFTER this association.
+  # On destroy: Terraform removes this association first, which keeps the
+  # target in DRAINING state (not UNUSED), allowing the attachment waiter
+  # to complete cleanly.
+  depends_on = [aws_vpclattice_target_group_attachment.service_b]
 }

@@ -123,12 +123,6 @@ resource "aws_instance" "a" {
   iam_instance_profile = aws_iam_instance_profile.instance_a.name
   vpc_security_group_ids = [aws_security_group.instance_a.id]
 
-  user_data = <<-EOF
-    #!/bin/bash
-    dnf install -y python3 python3-pip
-    pip3 install botocore awscrt requests
-  EOF
-
   tags = { Name = "instance-a-consumer" }
 }
 

@@ -27,12 +27,23 @@ output "note" {
   description = "Verification commands"
   value       = <<-EOT
     # 1. Connect to Instance A via SSM:
-    aws ssm start-session --target ${aws_instance.a.id} --region ${var.aws_region} --profile ${var.aws_profile}
+    aws ssm start-session --target ${aws_instance.a.id} --region ${var.aws_region}
 
-    # 2. Call Service B without signing (expect 403):
+    # 2. Inside Instance A — call Service B without signing (expect 403):
     curl http://${aws_vpclattice_service.service_b.dns_entry[0].domain_name}
 
-    # 3. Call Service B with SigV4A signing (expect 200):
-    python3 /tmp/client.py ${aws_vpclattice_service.service_b.dns_entry[0].domain_name}
+    # 3. Inside Instance A — get credentials from instance metadata:
+    TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+    CREDS=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/iam/security-credentials/vpc-lattice-demo-instance-a)
+    export AWS_ACCESS_KEY_ID=$(echo $CREDS | python3 -c "import sys,json; print(json.load(sys.stdin)['AccessKeyId'])")
+    export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | python3 -c "import sys,json; print(json.load(sys.stdin)['SecretAccessKey'])")
+    export AWS_SESSION_TOKEN=$(echo $CREDS | python3 -c "import sys,json; print(json.load(sys.stdin)['Token'])")
+
+    # 4. Inside Instance A — call Service B with SigV4 signing via curl (expect 200):
+    curl --aws-sigv4 "aws:amz:${var.aws_region}:vpc-lattice-svcs" \
+         --user "$AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY" \
+         -H "x-amz-security-token: $AWS_SESSION_TOKEN" \
+         -H "x-amz-content-sha256: UNSIGNED-PAYLOAD" \
+         http://${aws_vpclattice_service.service_b.dns_entry[0].domain_name}
   EOT
 }
