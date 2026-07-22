@@ -88,13 +88,13 @@ terraform destroy
 
 ## Cost warning
 
-This demo creates resources that incur AWS costs while deployed:
-
-- 6 SSM VPC Interface Endpoints (~$0.01/hour each)
-- VPC Lattice data processing charges
-- 2 EC2 t3.micro instances
-
-Always run `terraform destroy` when you are done.
+> [!WARNING]
+> This demo creates resources that incur AWS costs while deployed:
+> - 6 SSM VPC Interface Endpoints (~$0.01/hour each)
+> - VPC Lattice data processing charges
+> - 2 EC2 t3.micro instances
+>
+> Always run `terraform destroy` when you are done.
 
 ## License
 
