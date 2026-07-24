@@ -24,7 +24,7 @@ Both VPCs intentionally use the same CIDR (`10.0.0.0/24`) to demonstrate that VP
 ## Usage
 
 ```shell
-git clone https://codeberg.org/scambelo/aws-vpc-lattice-services-demo.git
+git clone https://github.com/scambelo/aws-vpc-lattice-services-demo.git
 cd aws-vpc-lattice-services-demo
 
 terraform init
@@ -92,27 +92,82 @@ curl --aws-sigv4 "aws:amz:<aws_region>:vpc-lattice-svcs" \
 > [!NOTE]
 > Use `terraform output note` to get these commands with the correct values already filled in — `instance ID`, `role name`, `domain`, and `region`.
 
-## Variables
+## Requirements
 
-| Variable | Description | Default |
-|---|---|---|
-| `aws_region` | AWS region to deploy | `eu-west-1` |
+| Name | Version |
+| ---- | ------- |
+| [terraform](#requirement\_terraform) | >= 1.5 |
+| [aws](#requirement\_aws) | >= 5.80 |
 
-## Cleanup
+## Providers
 
-```shell
-terraform destroy
-```
+| Name | Version |
+| ---- | ------- |
+| [aws](#provider\_aws) | >= 5.80 |
 
-## Cost warning
+## Modules
 
-> [!WARNING]
-> This demo creates resources that incur AWS costs while deployed:
-> - 6 SSM VPC Interface Endpoints (~$0.01/hour each)
-> - VPC Lattice data processing charges
-> - 2 EC2 t3.micro instances
->
-> Always run `terraform destroy` when you are done.
+No modules.
+
+## Resources
+
+| Name | Type |
+| ---- | ---- |
+| [aws_iam_instance_profile.instance_a](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
+| [aws_iam_instance_profile.instance_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
+| [aws_iam_role.instance_a](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.instance_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.instance_a](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy_attachment.instance_b_ssm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_instance.a](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
+| [aws_instance.b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
+| [aws_security_group.instance_a](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [aws_security_group.instance_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [aws_security_group.ssm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [aws_security_group.vpc_association](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [aws_subnet.vpc_a](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet) | resource |
+| [aws_subnet.vpc_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet) | resource |
+| [aws_vpc.vpc_a](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc) | resource |
+| [aws_vpc.vpc_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc) | resource |
+| [aws_vpc_endpoint.ssm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_endpoint) | resource |
+| [aws_vpc_security_group_ingress_rule.vpc_association_http](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
+| [aws_vpclattice_auth_policy.service_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpclattice_auth_policy) | resource |
+| [aws_vpclattice_auth_policy.service_network](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpclattice_auth_policy) | resource |
+| [aws_vpclattice_listener.service_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpclattice_listener) | resource |
+| [aws_vpclattice_service.service_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpclattice_service) | resource |
+| [aws_vpclattice_service_network.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpclattice_service_network) | resource |
+| [aws_vpclattice_service_network_service_association.service_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpclattice_service_network_service_association) | resource |
+| [aws_vpclattice_service_network_vpc_association.vpc_a](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpclattice_service_network_vpc_association) | resource |
+| [aws_vpclattice_target_group.service_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpclattice_target_group) | resource |
+| [aws_vpclattice_target_group_attachment.service_b](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpclattice_target_group_attachment) | resource |
+| [aws_ami.al2023](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
+| [aws_availability_zones.available](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones) | data source |
+| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_iam_policy_document.ec2_assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.instance_a_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.service_b_auth](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.service_network_auth](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
+
+## Inputs
+
+| Name | Description | Type | Default |
+| ---- | ----------- | ---- | ------- |
+| [aws\_profile](#input\_aws\_profile) | AWS CLI profile to use | `string` | `"sandbox"` |
+| [aws\_region](#input\_aws\_region) | AWS region to deploy the demo | `string` | `"eu-west-1"` |
+| [custom\_domain](#input\_custom\_domain) | Custom domain for the VPC Lattice service (e.g. service-b.internal.example.com). Must match the ACM certificate. | `string` | `"service-b.internal.example.com"` |
+| [hosted\_zone\_name](#input\_hosted\_zone\_name) | Route 53 private hosted zone name (e.g. internal.example.com) | `string` | `"internal.example.com"` |
+
+## Outputs
+
+| Name | Description |
+| ---- | ----------- |
+| [instance\_a\_id](#output\_instance\_a\_id) | Instance A (consumer) — connect via SSM Session Manager |
+| [instance\_a\_role\_arn](#output\_instance\_a\_role\_arn) | IAM role ARN of Instance A — referenced in the Service B auth policy |
+| [instance\_b\_id](#output\_instance\_b\_id) | Instance B (provider) — connect via SSM Session Manager |
+| [note](#output\_note) | Verification commands |
+| [service\_b\_domain](#output\_service\_b\_domain) | VPC Lattice auto-generated domain for Service B — use this to call the service from Instance A |
+| [service\_network\_arn](#output\_service\_network\_arn) | Service Network ARN |
 
 ## License
 
